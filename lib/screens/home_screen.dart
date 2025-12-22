@@ -6,17 +6,24 @@ import '../providers/graph_state.dart';
 import '../widgets/expression_sidebar.dart';
 import '../widgets/graph_view_2d.dart';
 import '../widgets/graph_view_3d.dart';
+import '../widgets/navigation_drawer.dart';
 
 /// The main home screen with sidebar and graph view
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return MathKeyboardViewInsets(
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
         appBar: _buildAppBar(context),
+        drawer: const NavigationDrawerWidget(),
         body: SafeArea(
           child: Row(
             children: [
@@ -38,14 +45,6 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: Colors.grey.shade800,
       title: Row(
         children: [
-          // Menu icon
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () {
-              // TODO: Show menu
-            },
-          ),
-          const SizedBox(width: 8),
           // Graph title
           const Text(
             'Untitled Graph',
@@ -73,31 +72,6 @@ class HomeScreen extends StatelessWidget {
       ),
       centerTitle: false,
       actions: [
-        // 2D/3D toggle
-        Consumer<GraphState>(
-          builder: (context, state, child) {
-            return SegmentedButton<bool>(
-              segments: const [
-                ButtonSegment(value: false, label: Text('2D')),
-                ButtonSegment(value: true, label: Text('3D')),
-              ],
-              selected: {state.is3DMode},
-              onSelectionChanged: (selection) {
-                state.setMode(is3D: selection.first);
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return Colors.blue;
-                  }
-                  return Colors.grey.shade700;
-                }),
-                foregroundColor: WidgetStateProperty.all(Colors.white),
-              ),
-            );
-          },
-        ),
-        const SizedBox(width: 16),
         // Help button
         IconButton(
           icon: const Icon(Icons.help_outline, color: Colors.white),

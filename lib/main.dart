@@ -36,6 +36,20 @@ class MaffyApp extends StatelessWidget {
             overlayColor: Colors.blue.withValues(alpha: 0.2),
           ),
         ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.dark,
+          ),
+          sliderTheme: SliderThemeData(
+            activeTrackColor: Colors.blue,
+            thumbColor: Colors.blue,
+            inactiveTrackColor: Colors.grey.shade700,
+            overlayColor: Colors.blue.withValues(alpha: 0.2),
+          ),
+        ),
+        themeMode: ThemeMode.system,
         // Required for math_keyboard locale support
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
