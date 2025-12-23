@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/geometry_object.dart';
 import '../../models/geometry_tools.dart';
 import '../../providers/geometry_provider.dart';
+import '../../models/graph_colors.dart';
 
 class GeometryCanvas extends StatefulWidget {
   const GeometryCanvas({super.key});
@@ -162,7 +163,7 @@ class GeometryPainter extends CustomPainter {
       
       final isSelected = selectedIds.contains(obj.id);
       final paint = Paint()
-        ..color = isSelected ? Colors.blue : obj.color
+        ..color = isSelected ? GraphColors.blue : obj.color
         ..strokeWidth = isSelected ? obj.strokeWidth + 2 : obj.strokeWidth
         ..style = PaintingStyle.stroke;
 
@@ -194,7 +195,7 @@ class GeometryPainter extends CustomPainter {
         final center = toPixels(obj.x, obj.y);
         
         final paint = Paint()
-          ..color = isSelected ? Colors.blue : obj.color
+          ..color = isSelected ? GraphColors.blue : obj.color
           ..style = PaintingStyle.fill;
           
         canvas.drawCircle(center, isSelected ? 6.0 : 4.0, paint);
@@ -204,7 +205,7 @@ class GeometryPainter extends CustomPainter {
           canvas.drawCircle(
             center, 
             8.0, 
-            Paint()..color = Colors.blue.withValues(alpha: 0.3)..style = PaintingStyle.fill
+            Paint()..color = GraphColors.blue.withValues(alpha: 0.3)..style = PaintingStyle.fill
           );
         }
         
@@ -402,14 +403,14 @@ class GeometryPainter extends CustomPainter {
       final fillPath = Path.from(path)..close();
       canvas.drawPath(
         fillPath, 
-        Paint()..color = Colors.blue.withValues(alpha: 0.1)..style = PaintingStyle.fill
+        Paint()..color = GraphColors.blue.withValues(alpha: 0.1)..style = PaintingStyle.fill
       );
     }
 
     // Draw lines
     canvas.drawPath(
       path, 
-      Paint()..color = Colors.blue..strokeWidth = 2..style = PaintingStyle.stroke
+      Paint()..color = GraphColors.blue..strokeWidth = 2..style = PaintingStyle.stroke
     );
   }
 

@@ -10,30 +10,41 @@ class GeometryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Geometry'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
+    return Theme(
+      data: ThemeData.light(useMaterial3: true).copyWith(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 1,
+        ),
       ),
-      body: Column(
-        children: [
-          const GeometryToolbar(),
-          Expanded(
-            child: Row(
-              children: [
-                const AlgebraPanel(),
-                Expanded(
-                  child: Container(
-                    color: Colors.white,
-                    child: const GeometryCanvas(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Geometry'),
+        ),
+        body: Column(
+          children: [
+            const GeometryToolbar(),
+            Expanded(
+              child: Row(
+                children: [
+                  const AlgebraPanel(),
+                  Expanded(
+                    child: Container(
+                      color: Colors.white,
+                      child: const GeometryCanvas(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

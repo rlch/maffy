@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/geometry_object.dart';
 import '../../providers/geometry_provider.dart';
+import '../../models/graph_colors.dart';
 
 class AlgebraPanel extends StatelessWidget {
   const AlgebraPanel({super.key});
@@ -64,7 +65,7 @@ class AlgebraPanel extends StatelessWidget {
 
                     return ListTile(
                       selected: isSelected,
-                      selectedTileColor: Colors.blue.withValues(alpha: 0.1),
+                      selectedTileColor: GraphColors.blue.withValues(alpha: 0.1),
                       leading: GestureDetector(
                         onTap: () {
                           // Toggle visibility

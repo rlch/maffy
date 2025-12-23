@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/geometry_tools.dart';
 import '../../providers/geometry_provider.dart';
+import '../../models/graph_colors.dart';
 
 class GeometryToolbar extends StatelessWidget {
   const GeometryToolbar({super.key});
@@ -82,10 +83,10 @@ class _ToolButton extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 4),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
+            color: isSelected ? GraphColors.blue.withValues(alpha: 0.1) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? Colors.blue : Colors.transparent,
+              color: isSelected ? GraphColors.blue : Colors.transparent,
             ),
           ),
           child: Column(
@@ -93,7 +94,7 @@ class _ToolButton extends StatelessWidget {
             children: [
               Icon(
                 _getIcon(tool.iconName),
-                color: isSelected ? Colors.blue : Colors.black87,
+                color: isSelected ? GraphColors.blue : Colors.black87,
                 size: 24,
               ),
               const SizedBox(height: 4),
@@ -101,7 +102,7 @@ class _ToolButton extends StatelessWidget {
                 tool.name,
                 style: TextStyle(
                   fontSize: 10,
-                  color: isSelected ? Colors.blue : Colors.black87,
+                  color: isSelected ? GraphColors.blue : Colors.black87,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
