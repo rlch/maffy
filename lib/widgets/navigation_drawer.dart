@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/graph_state.dart';
+import '../screens/geometry_screen.dart';
 import '../screens/scientific_calculator_screen.dart';
 
 /// Navigation drawer for switching between calculator modes
@@ -107,6 +108,22 @@ class NavigationDrawerWidget extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const ScientificCalculatorScreen(),
+                  ),
+                );
+              },
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            ),
+
+            // Geometry option
+            ListTile(
+              leading: const Icon(Icons.architecture),
+              title: const Text('Geometry'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GeometryScreen(),
                   ),
                 );
               },

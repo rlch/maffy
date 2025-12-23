@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/editing_state.dart';
+import 'providers/geometry_provider.dart';
 import 'providers/graph_state.dart';
 import 'screens/home_screen.dart';
 
@@ -19,6 +20,7 @@ class MaffyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => GraphState()),
         ChangeNotifierProvider(create: (_) => EditingState()),
+        ChangeNotifierProvider(create: (_) => GeometryProvider()),
       ],
       child: MaterialApp(
         title: 'Maffy',
