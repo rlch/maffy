@@ -34,18 +34,20 @@ class _GeometryCanvasState extends State<GeometryCanvas> {
         return Consumer<GeometryProvider>(
           builder: (context, provider, child) {
             return GestureDetector(
-              onPanStart: (details) {
+              onPanDown: (details) {
                 final mathPos = _pixelsToMath(details.localPosition, size);
-                final tappedId = _hitTest(mathPos, provider.objects, 10 / scaleX); // 10px hit radius
+                final tappedId = _hitTest(mathPos, provider.objects, 10 / scaleX);
                 
                 if (tappedId != null) {
                   setState(() {
                     _draggedObjectId = tappedId;
                   });
                   provider.startDragging(tappedId);
-                  provider.handleTap(mathPos, tappedObjectId: tappedId);
-                } else {
-                  provider.handleTap(mathPos);
+                  
+                  // Select immediately if using move tool
+                  if (provider.activeTool == GeometryToolType.move) {
+                    provider.selectObject(tappedId);
+                  }
                 }
               },
               onPanUpdate: (details) {
@@ -60,7 +62,7 @@ class _GeometryCanvasState extends State<GeometryCanvas> {
                     final dy = -details.delta.dy / scaleY; // Invert dy
                     _xMin -= dx;
                     _xMax -= dx;
-                    _yMin -= dy; // Panning up (negative dy) means moving view down (increasing yMin)
+                    _yMin -= dy;
                     _yMax -= dy;
                   });
                 }
@@ -69,6 +71,16 @@ class _GeometryCanvasState extends State<GeometryCanvas> {
                 setState(() {
                   _draggedObjectId = null;
                 });
+              },
+              onPanCancel: () {
+                setState(() {
+                  _draggedObjectId = null;
+                });
+              },
+              onTapUp: (details) {
+                final mathPos = _pixelsToMath(details.localPosition, size);
+                final tappedId = _hitTest(mathPos, provider.objects, 10 / scaleX);
+                provider.handleTap(mathPos, tappedObjectId: tappedId);
               },
               child: CustomPaint(
                 size: size,

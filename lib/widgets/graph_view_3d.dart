@@ -66,6 +66,8 @@ class GraphView3D extends StatelessWidget {
         );
         return z ?? double.nan;
       },
+      xDomain: (state.xMin, state.xMax),
+      yDomain: (state.yMin, state.yMax),
       colorScale: ColorScales.viridis,
     );
   }
