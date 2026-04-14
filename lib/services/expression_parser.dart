@@ -60,6 +60,31 @@ class ExpressionParserService {
     }
   }
 
+  /// Evaluate an expression for given x and y values (for implicit equations)
+  double? evaluateXY(
+    Expression expression,
+    double x,
+    double y, {
+    Map<String, double> variables = const {},
+  }) {
+    try {
+      _context.bindVariable(Variable('x'), Number(x));
+      _context.bindVariable(Variable('y'), Number(y));
+
+      for (final entry in variables.entries) {
+        _context.bindVariable(Variable(entry.key), Number(entry.value));
+      }
+
+      final result = expression.evaluate(EvaluationType.REAL, _context);
+      if (result is double && result.isFinite) {
+        return result;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Generate points for plotting a function
   List<math.Point<double>> generatePoints(
     Expression expression, {
