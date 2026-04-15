@@ -179,7 +179,9 @@ class ExpressionSidebar extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.place),
               title: const Text('Point'),
-              subtitle: const Text('(x, y) coordinate'),
+              subtitle: Text(context.read<GraphState>().is3DMode
+                  ? '(x, y, z) coordinate'
+                  : '(x, y) coordinate'),
               onTap: () {
                 Navigator.pop(context);
                 _showPointDialog(context);
@@ -241,8 +243,11 @@ class ExpressionSidebar extends StatelessWidget {
   }
 
   void _showPointDialog(BuildContext context) {
+    final graphState = context.read<GraphState>();
+    final is3D = graphState.is3DMode;
     final xController = TextEditingController(text: '0');
     final yController = TextEditingController(text: '0');
+    final zController = TextEditingController(text: '0');
 
     showDialog(
       context: context,
@@ -265,6 +270,16 @@ class ExpressionSidebar extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
               ),
             ),
+            if (is3D) ...[
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextField(
+                  controller: zController,
+                  decoration: const InputDecoration(labelText: 'z'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                ),
+              ),
+            ],
           ],
         ),
         actions: [
@@ -276,7 +291,12 @@ class ExpressionSidebar extends StatelessWidget {
             onPressed: () {
               final x = double.tryParse(xController.text) ?? 0;
               final y = double.tryParse(yController.text) ?? 0;
-              context.read<GraphState>().addPoint(x, y);
+              if (is3D) {
+                final z = double.tryParse(zController.text) ?? 0;
+                graphState.addPoint(x, y, z: z);
+              } else {
+                graphState.addPoint(x, y);
+              }
               Navigator.pop(context);
             },
             child: const Text('Add'),

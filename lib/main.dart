@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/editing_state.dart';
+import 'providers/geometry_provider.dart';
 import 'providers/graph_state.dart';
 import 'screens/home_screen.dart';
 
@@ -19,6 +20,7 @@ class MaffyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => GraphState()),
         ChangeNotifierProvider(create: (_) => EditingState()),
+        ChangeNotifierProvider(create: (_) => GeometryProvider()),
       ],
       child: MaterialApp(
         title: 'Maffy',
@@ -36,6 +38,20 @@ class MaffyApp extends StatelessWidget {
             overlayColor: Colors.blue.withValues(alpha: 0.2),
           ),
         ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue,
+            brightness: Brightness.dark,
+          ),
+          sliderTheme: SliderThemeData(
+            activeTrackColor: Colors.blue,
+            thumbColor: Colors.blue,
+            inactiveTrackColor: Colors.grey.shade700,
+            overlayColor: Colors.blue.withValues(alpha: 0.2),
+          ),
+        ),
+        themeMode: ThemeMode.system,
         // Required for math_keyboard locale support
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,

@@ -144,6 +144,7 @@ class _ExpressionCardState extends State<ExpressionCard> {
   }
 
   Widget _buildMathField(FunctionExpression entry) {
+    final is3D = context.read<GraphState>().is3DMode;
     return Focus(
       onFocusChange: (hasFocus) {
         if (!hasFocus) {
@@ -154,6 +155,7 @@ class _ExpressionCardState extends State<ExpressionCard> {
       child: MathField(
         controller: _controller,
         autofocus: true,
+        variables: is3D ? const ['x', 'y', 'z'] : const ['x', 'y'],
         decoration: const InputDecoration(
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -268,6 +270,7 @@ class _ExpressionCardState extends State<ExpressionCard> {
   }
 
   Widget _buildEmptyCard(EmptyExpression entry) {
+    final is3D = context.read<GraphState>().is3DMode;
     return _CardContainer(
       index: widget.index,
       child: Focus(
@@ -278,6 +281,7 @@ class _ExpressionCardState extends State<ExpressionCard> {
         },
         child: MathField(
           controller: _controller,
+          variables: is3D ? const ['x', 'y', 'z'] : const ['x', 'y'],
           decoration: InputDecoration(
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
