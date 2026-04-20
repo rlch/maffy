@@ -88,7 +88,7 @@ class GraphView3D extends StatelessWidget {
 
       // Thickness scales with the current viewbox so the curve stays
       // visually proportional when the user zooms in or out.
-      final halfWidth = 0.012 *
+      final halfWidth = 0.0015 *
           math.min(state.xMax - state.xMin, state.yMax - state.yMin);
 
       return _buildTubeMesh(points, halfWidth, func.color);

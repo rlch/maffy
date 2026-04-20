@@ -100,6 +100,7 @@ class GraphView2D extends StatelessWidget {
           return y ?? double.nan;
         },
         color: func.color,
+        weight: 0.5,
       ),
     ];
   }
@@ -136,6 +137,7 @@ class GraphView2D extends StatelessWidget {
           return y ?? double.nan;
         },
         color: defaultColor,
+        weight: 0.5,
       ),
     ];
   }
@@ -233,7 +235,7 @@ class GraphView2D extends StatelessWidget {
           key: ValueKey('implicit-$id-$i'),
           points: polylines[i],
           color: color,
-          weight: 2,
+          weight: 0.5,
         ),
     ];
   }
