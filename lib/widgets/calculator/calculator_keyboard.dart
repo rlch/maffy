@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+
 import 'calculator_button.dart';
 
-/// Calculator keyboard layout
+/// Calculator keypad laid out like the GeoGebra Scientific app.
+///
+/// Scientific layout is an 8-row x 5-column grid with the top rows
+/// dedicated to mode toggles and trig/log functions, numbers 7-0
+/// stacked in the middle three columns, memory & operators in the
+/// right-most columns, and a full-width primary "=" at the bottom.
 class CalculatorKeyboard extends StatelessWidget {
   final Function(String) onInput;
   final bool isMemoryActive;
@@ -16,165 +22,143 @@ class CalculatorKeyboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (showScientific) {
-      return _buildScientificKeyboard(context);
-    } else {
-      return _buildBasicKeyboard(context);
-    }
+    return showScientific
+        ? _buildScientificKeyboard()
+        : _buildBasicKeyboard();
   }
 
-  Widget _buildScientificKeyboard(BuildContext context) {
+  Widget _buildScientificKeyboard() {
+    // 8 rows of 5 buttons each.
+    final rows = <List<_K>>[
+      [
+        _K('DEG/RAD', CalculatorButtonType.special),
+        _K('(', CalculatorButtonType.operator),
+        _K(')', CalculatorButtonType.operator),
+        _K('MC', CalculatorButtonType.special),
+        _K('AC', CalculatorButtonType.special),
+      ],
+      [
+        _K('sin', CalculatorButtonType.function),
+        _K('cos', CalculatorButtonType.function),
+        _K('tan', CalculatorButtonType.function),
+        _K('MR', CalculatorButtonType.special),
+        _K('DEL', CalculatorButtonType.special),
+      ],
+      [
+        _K('asin', CalculatorButtonType.function),
+        _K('acos', CalculatorButtonType.function),
+        _K('atan', CalculatorButtonType.function),
+        _K('M+', CalculatorButtonType.special),
+        _K('÷', CalculatorButtonType.operator),
+      ],
+      [
+        _K('ln', CalculatorButtonType.function),
+        _K('log10', CalculatorButtonType.function),
+        _K('exp', CalculatorButtonType.function),
+        _K('M-', CalculatorButtonType.special),
+        _K('×', CalculatorButtonType.operator),
+      ],
+      [
+        _K('7', CalculatorButtonType.number),
+        _K('8', CalculatorButtonType.number),
+        _K('9', CalculatorButtonType.number),
+        _K('sqrt', CalculatorButtonType.function),
+        _K('-', CalculatorButtonType.operator),
+      ],
+      [
+        _K('4', CalculatorButtonType.number),
+        _K('5', CalculatorButtonType.number),
+        _K('6', CalculatorButtonType.number),
+        _K('^', CalculatorButtonType.operator),
+        _K('+', CalculatorButtonType.operator),
+      ],
+      [
+        _K('1', CalculatorButtonType.number),
+        _K('2', CalculatorButtonType.number),
+        _K('3', CalculatorButtonType.number),
+        _K('!', CalculatorButtonType.operator),
+        _K('π', CalculatorButtonType.number),
+      ],
+      [
+        _K('0', CalculatorButtonType.number),
+        _K('.', CalculatorButtonType.number),
+        _K('+/-', CalculatorButtonType.operator),
+        _K('e', CalculatorButtonType.number),
+        _K('=', CalculatorButtonType.equals),
+      ],
+    ];
+    return _grid(rows);
+  }
+
+  Widget _buildBasicKeyboard() {
+    final rows = <List<_K>>[
+      [
+        _K('AC', CalculatorButtonType.special),
+        _K('(', CalculatorButtonType.operator),
+        _K(')', CalculatorButtonType.operator),
+        _K('÷', CalculatorButtonType.operator),
+      ],
+      [
+        _K('7', CalculatorButtonType.number),
+        _K('8', CalculatorButtonType.number),
+        _K('9', CalculatorButtonType.number),
+        _K('×', CalculatorButtonType.operator),
+      ],
+      [
+        _K('4', CalculatorButtonType.number),
+        _K('5', CalculatorButtonType.number),
+        _K('6', CalculatorButtonType.number),
+        _K('-', CalculatorButtonType.operator),
+      ],
+      [
+        _K('1', CalculatorButtonType.number),
+        _K('2', CalculatorButtonType.number),
+        _K('3', CalculatorButtonType.number),
+        _K('+', CalculatorButtonType.operator),
+      ],
+      [
+        _K('0', CalculatorButtonType.number),
+        _K('.', CalculatorButtonType.number),
+        _K('DEL', CalculatorButtonType.special),
+        _K('=', CalculatorButtonType.equals),
+      ],
+    ];
+    return _grid(rows);
+  }
+
+  Widget _grid(List<List<_K>> rows) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate button size based on available space
-        final width = constraints.maxWidth;
-        final buttonWidth = (width - 48) / 5; // 5 columns with margins
-
         return Column(
           children: [
-            // Row 1: Scientific functions
-            _buildRow([
-              _ButtonConfig('DEG/RAD', CalculatorButtonType.special),
-              _ButtonConfig('(', CalculatorButtonType.operator),
-              _ButtonConfig(')', CalculatorButtonType.operator),
-              _ButtonConfig('MC', CalculatorButtonType.special),
-              _ButtonConfig('AC', CalculatorButtonType.special),
-            ], buttonWidth),
-
-            // Row 2: Trigonometric functions
-            _buildRow([
-              _ButtonConfig('sin', CalculatorButtonType.function),
-              _ButtonConfig('cos', CalculatorButtonType.function),
-              _ButtonConfig('tan', CalculatorButtonType.function),
-              _ButtonConfig('MR', CalculatorButtonType.special),
-              _ButtonConfig('DEL', CalculatorButtonType.special),
-            ], buttonWidth),
-
-            // Row 3: Inverse trig functions
-            _buildRow([
-              _ButtonConfig('asin', CalculatorButtonType.function),
-              _ButtonConfig('acos', CalculatorButtonType.function),
-              _ButtonConfig('atan', CalculatorButtonType.function),
-              _ButtonConfig('M+', CalculatorButtonType.special),
-              _ButtonConfig('÷', CalculatorButtonType.operator),
-            ], buttonWidth),
-
-            // Row 4: Log, exp, power
-            _buildRow([
-              _ButtonConfig('ln', CalculatorButtonType.function),
-              _ButtonConfig('log10', CalculatorButtonType.function),
-              _ButtonConfig('exp', CalculatorButtonType.function),
-              _ButtonConfig('M-', CalculatorButtonType.special),
-              _ButtonConfig('×', CalculatorButtonType.operator),
-            ], buttonWidth),
-
-            // Row 5: Numbers 7-9, sqrt, minus
-            _buildRow([
-              _ButtonConfig('7', CalculatorButtonType.number),
-              _ButtonConfig('8', CalculatorButtonType.number),
-              _ButtonConfig('9', CalculatorButtonType.number),
-              _ButtonConfig('sqrt', CalculatorButtonType.function),
-              _ButtonConfig('-', CalculatorButtonType.operator),
-            ], buttonWidth),
-
-            // Row 6: Numbers 4-6, power, plus
-            _buildRow([
-              _ButtonConfig('4', CalculatorButtonType.number),
-              _ButtonConfig('5', CalculatorButtonType.number),
-              _ButtonConfig('6', CalculatorButtonType.number),
-              _ButtonConfig('^', CalculatorButtonType.operator),
-              _ButtonConfig('+', CalculatorButtonType.operator),
-            ], buttonWidth),
-
-            // Row 7: Numbers 1-3, factorial, pi
-            _buildRow([
-              _ButtonConfig('1', CalculatorButtonType.number),
-              _ButtonConfig('2', CalculatorButtonType.number),
-              _ButtonConfig('3', CalculatorButtonType.number),
-              _ButtonConfig('!', CalculatorButtonType.operator),
-              _ButtonConfig('π', CalculatorButtonType.number),
-            ], buttonWidth),
-
-            // Row 8: 0, ., +/-, e, equals
-            _buildRow([
-              _ButtonConfig('0', CalculatorButtonType.number),
-              _ButtonConfig('.', CalculatorButtonType.number),
-              _ButtonConfig('+/-', CalculatorButtonType.operator),
-              _ButtonConfig('e', CalculatorButtonType.number),
-              _ButtonConfig('=', CalculatorButtonType.equals),
-            ], buttonWidth),
+            for (final row in rows)
+              Expanded(
+                child: Row(
+                  children: [
+                    for (final k in row)
+                      Expanded(
+                        child: CalculatorButton(
+                          text: k.text,
+                          type: k.type,
+                          isMemoryActive: isMemoryActive &&
+                              (k.text == 'MR' ||
+                                  k.text == 'M+' ||
+                                  k.text == 'M-'),
+                          onPressed: () => onInput(k.text),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildBasicKeyboard(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        final buttonWidth = (width - 32) / 4; // 4 columns
-
-        return Column(
-          children: [
-            _buildRow([
-              _ButtonConfig('AC', CalculatorButtonType.special),
-              _ButtonConfig('(', CalculatorButtonType.operator),
-              _ButtonConfig(')', CalculatorButtonType.operator),
-              _ButtonConfig('÷', CalculatorButtonType.operator),
-            ], buttonWidth),
-            _buildRow([
-              _ButtonConfig('7', CalculatorButtonType.number),
-              _ButtonConfig('8', CalculatorButtonType.number),
-              _ButtonConfig('9', CalculatorButtonType.number),
-              _ButtonConfig('×', CalculatorButtonType.operator),
-            ], buttonWidth),
-            _buildRow([
-              _ButtonConfig('4', CalculatorButtonType.number),
-              _ButtonConfig('5', CalculatorButtonType.number),
-              _ButtonConfig('6', CalculatorButtonType.number),
-              _ButtonConfig('-', CalculatorButtonType.operator),
-            ], buttonWidth),
-            _buildRow([
-              _ButtonConfig('1', CalculatorButtonType.number),
-              _ButtonConfig('2', CalculatorButtonType.number),
-              _ButtonConfig('3', CalculatorButtonType.number),
-              _ButtonConfig('+', CalculatorButtonType.operator),
-            ], buttonWidth),
-            _buildRow([
-              _ButtonConfig('0', CalculatorButtonType.number),
-              _ButtonConfig('.', CalculatorButtonType.number),
-              _ButtonConfig('DEL', CalculatorButtonType.special),
-              _ButtonConfig('=', CalculatorButtonType.equals),
-            ], buttonWidth),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildRow(List<_ButtonConfig> buttons, double buttonWidth) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: buttons.map((config) {
-        return CalculatorButton(
-          text: config.text,
-          type: config.type,
-          width: buttonWidth,
-          onPressed: () => onInput(config.text),
-          isMemoryActive: isMemoryActive &&
-              (config.text == 'MR' ||
-                  config.text == 'M+' ||
-                  config.text == 'M-'),
-        );
-      }).toList(),
     );
   }
 }
 
-class _ButtonConfig {
+class _K {
   final String text;
   final CalculatorButtonType type;
-
-  _ButtonConfig(this.text, this.type);
+  const _K(this.text, this.type);
 }

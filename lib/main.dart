@@ -6,6 +6,7 @@ import 'providers/editing_state.dart';
 import 'providers/geometry_provider.dart';
 import 'providers/graph_state.dart';
 import 'screens/home_screen.dart';
+import 'theme/geogebra_theme.dart';
 
 void main() {
   runApp(const MaffyApp());
@@ -25,34 +26,8 @@ class MaffyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Maffy',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.light,
-          ),
-          sliderTheme: SliderThemeData(
-            activeTrackColor: Colors.blue,
-            thumbColor: Colors.blue,
-            inactiveTrackColor: Colors.grey.shade300,
-            overlayColor: Colors.blue.withValues(alpha: 0.2),
-          ),
-        ),
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blue,
-            brightness: Brightness.dark,
-          ),
-          sliderTheme: SliderThemeData(
-            activeTrackColor: Colors.blue,
-            thumbColor: Colors.blue,
-            inactiveTrackColor: Colors.grey.shade700,
-            overlayColor: Colors.blue.withValues(alpha: 0.2),
-          ),
-        ),
-        themeMode: ThemeMode.system,
-        // Required for math_keyboard locale support
+        theme: GG.light(),
+        themeMode: ThemeMode.light,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,

@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../models/calculator_state.dart';
 import 'package:intl/intl.dart';
 
-/// Calculator history panel
+import '../../models/calculator_state.dart';
+import '../../theme/geogebra_theme.dart';
+
+/// Slide-out history panel for the scientific calculator.
+///
+/// Styled after the "History" drawer on GeoGebra's scientific app: a
+/// white column with a sticky header, a thin 1 dp leading border
+/// (left shadow on small screens), and per-entry rows that bubble up
+/// the result in a larger font beneath the expression.
 class CalculatorHistoryPanel extends StatelessWidget {
   final List<CalculationHistory> history;
   final Function(CalculationHistory) onHistoryItemTap;
@@ -17,93 +24,76 @@ class CalculatorHistoryPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(-2, 0),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(left: BorderSide(color: GG.panelDivider)),
       ),
       child: Column(
         children: [
-          // Header
           Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              border: Border(
-                bottom: BorderSide(
-                  color: colorScheme.outlineVariant,
-                ),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: GG.panelDivider)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'History',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
+                    color: GG.textPrimary,
                   ),
                 ),
                 if (history.isNotEmpty)
-                  TextButton(
+                  TextButton.icon(
                     onPressed: onClearHistory,
-                    child: Text(
-                      'Clear',
-                      style: TextStyle(
-                        color: colorScheme.primary,
-                        fontSize: 14,
-                      ),
-                    ),
+                    icon: const Icon(Icons.delete_outline, size: 16),
+                    label: const Text('Clear'),
                   ),
               ],
             ),
           ),
-
-          // History list
           Expanded(
             child: history.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.history,
-                          size: 64,
-                          color: colorScheme.onSurfaceVariant.withOpacity(0.5),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No history yet',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
+                ? _EmptyState()
                 : ListView.builder(
                     itemCount: history.length,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemBuilder: (context, index) {
-                      final item = history[index];
-                      return _HistoryItem(
-                        history: item,
-                        onTap: () => onHistoryItemTap(item),
-                      );
-                    },
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    itemBuilder: (context, index) => _HistoryItem(
+                      history: history[index],
+                      onTap: () => onHistoryItemTap(history[index]),
+                    ),
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.history, size: 48, color: GG.textHint),
+          SizedBox(height: 12),
+          Text(
+            'No history yet',
+            style: TextStyle(
+              fontSize: 14,
+              color: GG.textSecondary,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Past calculations will appear here',
+            style: TextStyle(fontSize: 12, color: GG.textHint),
           ),
         ],
       ),
@@ -115,77 +105,57 @@ class _HistoryItem extends StatelessWidget {
   final CalculationHistory history;
   final VoidCallback onTap;
 
-  const _HistoryItem({
-    required this.history,
-    required this.onTap,
-  });
+  const _HistoryItem({required this.history, required this.onTap});
 
-  String _formatTimestamp(DateTime timestamp) {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return DateFormat('MMM d').format(timestamp);
-    }
+  String _format(DateTime t) {
+    final d = DateTime.now().difference(t);
+    if (d.inMinutes < 1) return 'Just now';
+    if (d.inHours < 1) return '${d.inMinutes}m ago';
+    if (d.inDays < 1) return '${d.inHours}h ago';
+    if (d.inDays == 1) return 'Yesterday';
+    if (d.inDays < 7) return '${d.inDays}d ago';
+    return DateFormat('MMM d').format(t);
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: colorScheme.outlineVariant,
-            ),
-          ),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: GG.panelDivider)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Timestamp
             Text(
-              _formatTimestamp(history.timestamp),
-              style: TextStyle(
+              _format(history.timestamp),
+              style: const TextStyle(
                 fontSize: 11,
-                color: colorScheme.onSurfaceVariant.withOpacity(0.8),
+                color: GG.textHint,
               ),
             ),
             const SizedBox(height: 4),
-            // Expression
             Text(
               history.expression,
-              style: TextStyle(
-                fontSize: 16,
-                color: colorScheme.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
+              style: const TextStyle(
+                fontSize: 15,
+                color: GG.textSecondary,
+                fontFeatures: [FontFeature.tabularFigures()],
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
             ),
             const SizedBox(height: 2),
-            // Result
             Text(
               '= ${history.result}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface,
-                fontFeatures: const [FontFeature.tabularFigures()],
+                color: GG.textPrimary,
+                fontFeatures: [FontFeature.tabularFigures()],
               ),
               overflow: TextOverflow.ellipsis,
             ),

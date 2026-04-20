@@ -3,188 +3,66 @@ import 'package:math_keyboard/math_keyboard.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/graph_state.dart';
+import '../theme/geogebra_theme.dart';
 import '../widgets/expression_sidebar.dart';
+import '../widgets/geogebra_app_bar.dart';
 import '../widgets/graph_view_2d.dart';
 import '../widgets/graph_view_3d.dart';
 import '../widgets/navigation_drawer.dart';
 
-/// The main home screen with sidebar and graph view
-class HomeScreen extends StatefulWidget {
+/// GeoGebra-style graphing calculator home screen.
+///
+/// Layout:
+///  - [GeoGebraAppBar] at the top with the Maffy logo and current app name.
+///  - Left: [ExpressionSidebar] (expressions, sliders, points).
+///  - Center: 2D or 3D graph view.
+///  - Right floating column: zoom +/-, reset and more-options buttons.
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return MathKeyboardViewInsets(
       child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: _buildAppBar(context),
+        backgroundColor: GG.appBg,
         drawer: const NavigationDrawerWidget(),
-        body: SafeArea(
-          child: Row(
-            children: [
-              // Expression sidebar
-              const ExpressionSidebar(),
-              // Graph view
-              Expanded(
-                child: _buildGraphView(context),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.grey.shade800,
-      title: Row(
-        children: [
-          // Graph title
-          const Text(
-            'Untitled Graph',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Save button
-          TextButton(
-            onPressed: () {
-              // TODO: Implement save
-            },
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-            child: const Text(
-              'Save',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-      centerTitle: false,
-      actions: [
-        // Help button
-        IconButton(
-          icon: const Icon(Icons.help_outline, color: Colors.white),
-          onPressed: () => _showHelp(context),
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  Widget _buildGraphView(BuildContext context) {
-    return Consumer<GraphState>(
-      builder: (context, state, child) {
-        return Stack(
+        body: Column(
           children: [
-            // Graph
-            state.is3DMode ? const GraphView3D() : const GraphView2D(),
-            // Graph controls overlay
-            Positioned(
-              right: 16,
-              top: 16,
-              child: _buildGraphControls(context),
+            SafeArea(
+              bottom: false,
+              child: Builder(
+                builder: (context) => GeoGebraAppBar(
+                  subtitle: context.watch<GraphState>().is3DMode
+                      ? '3D Calculator'
+                      : 'Graphing Calculator',
+                  onMenuTap: () => Scaffold.of(context).openDrawer(),
+                  actions: [
+                    GeoGebraHeaderAction(
+                      icon: Icons.help_outline,
+                      label: 'Help',
+                      onPressed: () => _showHelp(context),
+                    ),
+                    GeoGebraHeaderAction(
+                      icon: Icons.save_outlined,
+                      label: 'Save',
+                      primary: true,
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: Row(
+                children: [
+                  const ExpressionSidebar(),
+                  Expanded(child: _GraphArea()),
+                ],
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
-
-  Widget _buildGraphControls(BuildContext context) {
-    return Column(
-      children: [
-        // Zoom controls
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () {
-                  final state = context.read<GraphState>();
-                  final factor = 0.8;
-                  final xCenter = (state.xMin + state.xMax) / 2;
-                  final yCenter = (state.yMin + state.yMax) / 2;
-                  final xRange = (state.xMax - state.xMin) * factor / 2;
-                  final yRange = (state.yMax - state.yMin) * factor / 2;
-                  state.setViewBounds(
-                    xMin: xCenter - xRange,
-                    xMax: xCenter + xRange,
-                    yMin: yCenter - yRange,
-                    yMax: yCenter + yRange,
-                  );
-                },
-                tooltip: 'Zoom in',
-              ),
-              const Divider(height: 1),
-              IconButton(
-                icon: const Icon(Icons.remove),
-                onPressed: () {
-                  final state = context.read<GraphState>();
-                  final factor = 1.25;
-                  final xCenter = (state.xMin + state.xMax) / 2;
-                  final yCenter = (state.yMin + state.yMax) / 2;
-                  final xRange = (state.xMax - state.xMin) * factor / 2;
-                  final yRange = (state.yMax - state.yMin) * factor / 2;
-                  state.setViewBounds(
-                    xMin: xCenter - xRange,
-                    xMax: xCenter + xRange,
-                    yMin: yCenter - yRange,
-                    yMax: yCenter + yRange,
-                  );
-                },
-                tooltip: 'Zoom out',
-              ),
-            ],
-          ),
         ),
-        const SizedBox(height: 8),
-        // Home button
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () {
-              context.read<GraphState>().setViewBounds(
-                    xMin: -10,
-                    xMax: 10,
-                    yMin: -10,
-                    yMax: 10,
-                  );
-            },
-            tooltip: 'Reset view',
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -192,27 +70,26 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Maffy - Graphing Calculator'),
+        title: const Text('Maffy — Graphing Calculator'),
         content: const SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'How to use:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                'How to use',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               SizedBox(height: 8),
               Text('• Type expressions like x^2 or sin(x)'),
               Text('• Use the + button to add sliders or points'),
               Text('• Click the colored circle to toggle visibility'),
-              Text('• Drag on the graph to pan'),
-              Text('• Scroll or pinch to zoom'),
-              Text('• Toggle between 2D and 3D modes'),
+              Text('• Drag on the graph to pan, scroll to zoom'),
+              Text('• Switch between 2D and 3D from the menu'),
               SizedBox(height: 16),
               Text(
-                'Supported functions:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                'Supported functions',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               SizedBox(height: 8),
               Text('sin, cos, tan, sqrt, ln, log, abs, floor, ceil'),
@@ -227,6 +104,120 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text('Got it'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _GraphArea extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GraphState>(
+      builder: (context, state, _) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: Container(
+                color: Colors.white,
+                child: state.is3DMode
+                    ? const GraphView3D()
+                    : const GraphView2D(),
+              ),
+            ),
+            Positioned(
+              right: 16,
+              top: 16,
+              child: _GraphControls(state: state),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _GraphControls extends StatelessWidget {
+  final GraphState state;
+  const _GraphControls({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _FloatButton(
+          icon: Icons.add,
+          tooltip: 'Zoom in',
+          onTap: () => _zoom(0.8),
+        ),
+        const SizedBox(height: 8),
+        _FloatButton(
+          icon: Icons.remove,
+          tooltip: 'Zoom out',
+          onTap: () => _zoom(1.25),
+        ),
+        const SizedBox(height: 8),
+        _FloatButton(
+          icon: Icons.filter_center_focus,
+          tooltip: 'Reset view',
+          onTap: () => state.setViewBounds(
+            xMin: -10,
+            xMax: 10,
+            yMin: -10,
+            yMax: 10,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _zoom(double factor) {
+    final xCenter = (state.xMin + state.xMax) / 2;
+    final yCenter = (state.yMin + state.yMax) / 2;
+    final xRange = (state.xMax - state.xMin) * factor / 2;
+    final yRange = (state.yMax - state.yMin) * factor / 2;
+    state.setViewBounds(
+      xMin: xCenter - xRange,
+      xMax: xCenter + xRange,
+      yMin: yCenter - yRange,
+      yMax: yCenter + yRange,
+    );
+  }
+}
+
+class _FloatButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _FloatButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.white,
+        elevation: 2,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap,
+          child: Container(
+            width: 40,
+            height: 40,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: GG.panelDivider),
+            ),
+            child: Icon(icon, color: GG.textPrimary, size: 20),
+          ),
+        ),
       ),
     );
   }
