@@ -18,12 +18,38 @@ class ExpressionParserService {
   /// Returns the parsed expression or null if parsing fails
   ParseResult parseTeX(String tex) {
     try {
-      // Use math_keyboard's TeXParser to convert to expression string
-      final expression = TeXParser(tex).parse();
+      // TeXParser has no `=` token. Rewrite `LHS = RHS` to `(LHS)-(RHS)`
+      // so equations (y=x^2, x^2+y^2=9, x=2) all flow through as a single
+      // expression that's zero on the curve — implicit plotting handles it.
+      final processed = _rewriteEquation(tex);
+      final expression = TeXParser(processed).parse();
       return ParseResult.success(expression);
     } catch (e) {
       return ParseResult.error('Parse error: ${e.toString()}');
     }
+  }
+
+  /// Split on the first top-level `=` (outside braces/parens) and rewrite
+  /// to subtraction. Returns [tex] unchanged if no top-level `=` present.
+  String _rewriteEquation(String tex) {
+    var depth = 0;
+    var eqIdx = -1;
+    for (var i = 0; i < tex.length; i++) {
+      final c = tex[i];
+      if (c == '{' || c == '(' || c == '[') {
+        depth++;
+      } else if (c == '}' || c == ')' || c == ']') {
+        depth--;
+      } else if (c == '=' && depth == 0) {
+        eqIdx = i;
+        break;
+      }
+    }
+    if (eqIdx < 0) return tex;
+    final lhs = tex.substring(0, eqIdx).trim();
+    final rhs = tex.substring(eqIdx + 1).trim();
+    if (lhs.isEmpty || rhs.isEmpty) return tex;
+    return '($lhs)-($rhs)';
   }
 
   /// Parse an expression string (like "x^2 + 1") into a math Expression

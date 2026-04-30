@@ -52,15 +52,28 @@ class GraphView2D extends StatelessWidget {
     );
   }
 
-  /// Parse and strip common prefixes from latex (y=..., f(x)=...)
+  /// Strip `y = ` / `f(x) = ` prefix so the RHS takes the fast explicit
+  /// plotting path. MathField emits variables braced (`{y}={x}^{2}`), so
+  /// both plain and braced forms are accepted. Anything else — including
+  /// true implicit equations like `x^2+y^2=9` — is left to the parser's
+  /// equation rewriter.
   String _stripPrefix(String latex) {
-    // Handle "y = ..." format - strip the "y = " prefix
-    final yEqualsMatch = RegExp(r'^y\s*=\s*(.+)$').firstMatch(latex);
-    if (yEqualsMatch != null) return yEqualsMatch.group(1)!;
+    final trimmed = latex.trim();
 
-    // Handle "f(x) = ..." format - strip the function definition prefix
+    // y = ...   or   {y} = ...
+    final yMatch =
+        RegExp(r'^\{?\s*y\s*\}?\s*=\s*(.+)$').firstMatch(trimmed);
+    if (yMatch != null) {
+      final rhs = yMatch.group(1)!;
+      // Only strip if RHS has no `y` — otherwise leave for implicit path.
+      if (!RegExp(r'\{\s*y\s*\}|(^|[^a-zA-Z])y([^a-zA-Z]|$)').hasMatch(rhs)) {
+        return rhs;
+      }
+    }
+
+    // f(x) = ...
     final funcDefMatch =
-        RegExp(r'^[a-zA-Z]\s*\([a-zA-Z]\)\s*=\s*(.+)$').firstMatch(latex);
+        RegExp(r'^[a-zA-Z]\s*\([a-zA-Z]\)\s*=\s*(.+)$').firstMatch(trimmed);
     if (funcDefMatch != null) return funcDefMatch.group(1)!;
 
     return latex;
@@ -74,15 +87,18 @@ class GraphView2D extends StatelessWidget {
     final parser = ExpressionParserService();
 
     // Use live value if being edited, otherwise use committed value
-    final latex =
-        _stripPrefix(editingState.getLiveValue(func.id) ?? func.latex);
+    final rawLatex = editingState.getLiveValue(func.id) ?? func.latex;
+    final latex = _stripPrefix(rawLatex);
 
     final result = parser.parseTeX(latex);
     if (result is! ParseSuccess) return const [];
 
-    // Check if expression contains y variable — render as implicit curve
+    // Implicit path when the curve isn't a y=f(x) function:
+    // either `y` appears in the expression (e.g. circle) or the latex
+    // is still an equation (e.g. `x=2` — vertical line).
     final vars = parser.extractVariables(result.expression);
-    if (vars.contains('y')) {
+    final isEquation = _containsTopLevelEquals(latex);
+    if (vars.contains('y') || isEquation) {
       return _buildImplicitSegments(
         func.id, result.expression, graphState, func.color, parser,
       );
@@ -105,22 +121,38 @@ class GraphView2D extends StatelessWidget {
     ];
   }
 
+  bool _containsTopLevelEquals(String tex) {
+    var depth = 0;
+    for (var i = 0; i < tex.length; i++) {
+      final c = tex[i];
+      if (c == '{' || c == '(' || c == '[') {
+        depth++;
+      } else if (c == '}' || c == ')' || c == ']') {
+        depth--;
+      } else if (c == '=' && depth == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   List<Widget> _buildLivePlot(
     String id,
     GraphState graphState,
     EditingState editingState,
   ) {
     final parser = ExpressionParserService();
-    final latex = _stripPrefix(editingState.getLiveValue(id) ?? '');
+    final rawLatex = editingState.getLiveValue(id) ?? '';
+    final latex = _stripPrefix(rawLatex);
 
     final result = parser.parseTeX(latex);
     if (result is! ParseSuccess) return const [];
 
     const defaultColor = Color(0xFFC74440);
 
-    // Check if expression contains y variable — render as implicit curve
     final vars = parser.extractVariables(result.expression);
-    if (vars.contains('y')) {
+    final isEquation = _containsTopLevelEquals(latex);
+    if (vars.contains('y') || isEquation) {
       return _buildImplicitSegments(
           id, result.expression, graphState, defaultColor, parser);
     }

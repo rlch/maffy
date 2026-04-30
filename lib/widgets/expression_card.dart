@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:math_keyboard/math_keyboard.dart';
 import 'package:provider/provider.dart';
@@ -151,10 +152,11 @@ class _ExpressionCardState extends State<ExpressionCard> {
           setState(() => _isEditing = false);
         }
       },
+      onKeyEvent: _handleEqualsKey,
       child: MathField(
         controller: _controller,
         autofocus: true,
-        variables: is3D ? const ['x', 'y', 'z'] : const ['x', 'y'],
+        variables: _allowedVariables(is3D: is3D),
         decoration: const InputDecoration(
           filled: false,
           border: InputBorder.none,
@@ -173,6 +175,36 @@ class _ExpressionCardState extends State<ExpressionCard> {
         },
       ),
     );
+  }
+
+  /// MathField's built-in keyboard has no `=` button; it returns
+  /// `ignored` for unmapped characters, so `=` bubbles up to this parent
+  /// Focus. Insert it as a TeX leaf so equations like `x^2+y^2=9` and
+  /// `y=sin(x)` can be typed.
+  /// Letters the user can type in the MathField. Expanded beyond `x/y/z`
+  /// so shorthand slider assignments (`a=5`, `k=2`, `m=-3`) work and so
+  /// multi-letter expressions (`ax+b`) can be composed. `e` and `p` are
+  /// intentionally excluded because the math keyboard reserves them for
+  /// `e` and `\pi`.
+  List<String> _allowedVariables({required bool is3D}) {
+    const blocked = {'e', 'p'};
+    final letters = <String>[];
+    for (var c = 'a'.codeUnitAt(0); c <= 'z'.codeUnitAt(0); c++) {
+      final ch = String.fromCharCode(c);
+      if (blocked.contains(ch)) continue;
+      letters.add(ch);
+    }
+    if (!is3D) letters.remove('z');
+    return letters;
+  }
+
+  KeyEventResult _handleEqualsKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.character == '=') {
+      _controller?.addLeaf('=');
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   Widget _buildSliderCard(SliderExpression entry) {
@@ -290,9 +322,10 @@ class _ExpressionCardState extends State<ExpressionCard> {
         onFocusChange: (hasFocus) {
           if (!hasFocus) _commitEdit(entry.id);
         },
+        onKeyEvent: _handleEqualsKey,
         child: MathField(
           controller: _controller,
-          variables: is3D ? const ['x', 'y', 'z'] : const ['x', 'y'],
+          variables: _allowedVariables(is3D: is3D),
           decoration: const InputDecoration(
             filled: false,
             border: InputBorder.none,

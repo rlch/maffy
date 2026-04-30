@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/expression_entry.dart';
 import '../providers/graph_state.dart';
 import '../theme/geogebra_theme.dart';
 import 'expression_card.dart';
@@ -315,28 +314,20 @@ class _Header extends StatelessWidget {
 class _ExpressionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Selector<GraphState, List<ExpressionEntry>>(
-      selector: (_, state) => state.entries,
-      shouldRebuild: (previous, next) {
-        if (previous.length != next.length) return true;
-        for (int i = 0; i < previous.length; i++) {
-          if (previous[i].id != next[i].id) return true;
-          if (previous[i].runtimeType != next[i].runtimeType) return true;
-        }
-        return false;
-      },
-      builder: (context, entries, _) {
-        return ListView.builder(
-          padding: const EdgeInsets.only(bottom: 80, top: 4),
-          itemCount: entries.length,
-          itemBuilder: (context, index) {
-            final entry = entries[index];
-            return ExpressionCard(
-              key: ValueKey(entry.id),
-              entry: entry,
-              index: index,
-            );
-          },
+    // Watch the full state: slider drags, visibility toggles, and live
+    // edits all mutate individual entries in place, so a shape-only
+    // rebuild check (length + id + runtimeType) would miss them and leave
+    // the slider thumb / value label stuck on stale data.
+    final entries = context.watch<GraphState>().entries;
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 80, top: 4),
+      itemCount: entries.length,
+      itemBuilder: (context, index) {
+        final entry = entries[index];
+        return ExpressionCard(
+          key: ValueKey(entry.id),
+          entry: entry,
+          index: index,
         );
       },
     );

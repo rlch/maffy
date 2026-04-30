@@ -111,6 +111,23 @@ class GraphState extends ChangeNotifier {
 
     final entry = _entries[index];
 
+    // `a=5`-style assignments become sliders automatically — matches
+    // Desmos/GeoGebra behavior. Reserved plot-axis variables (x/y/z)
+    // fall through to implicit curve rendering (`x=2` = vertical line).
+    final sliderMatch = _matchSliderAssignment(latex);
+    if (sliderMatch != null && (entry is FunctionExpression || entry is EmptyExpression)) {
+      final (name, value) = sliderMatch;
+      _entries[index] = SliderExpression(
+        id: id,
+        name: name,
+        value: value,
+        min: _sliderMin(value),
+        max: _sliderMax(value),
+      );
+      notifyListeners();
+      return;
+    }
+
     if (entry is FunctionExpression) {
       final result = _parser.parseTeX(latex);
       _entries[index] = switch (result) {
@@ -146,6 +163,26 @@ class GraphState extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  // Single letter (optionally brace-wrapped as MathField emits `{a}`),
+  // `=`, then a signed numeric literal. x/y/z are reserved for plotting.
+  static final RegExp _sliderRegex = RegExp(
+    r'^\s*\{?\s*([a-zA-Z])\s*\}?\s*=\s*(-?\d+(?:\.\d+)?)\s*$',
+  );
+  static const Set<String> _reservedAxes = {'x', 'y', 'z'};
+
+  (String, double)? _matchSliderAssignment(String latex) {
+    final m = _sliderRegex.firstMatch(latex);
+    if (m == null) return null;
+    final name = m.group(1)!;
+    if (_reservedAxes.contains(name)) return null;
+    final value = double.tryParse(m.group(2)!);
+    if (value == null) return null;
+    return (name, value);
+  }
+
+  double _sliderMin(double value) => value < -10 ? value * 2 : -10;
+  double _sliderMax(double value) => value > 10 ? value * 2 : 10;
 
   /// Call this when user finishes editing (blur/submit) to ensure there's an empty slot
   void ensureEmptySlot() {
